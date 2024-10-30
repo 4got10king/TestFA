@@ -6,7 +6,6 @@ from pydantic_core import core_schema
 from typing import Any
 
 
-
 class ID(int):
     @classmethod
     def __get_pydantic_core_schema__(
