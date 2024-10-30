@@ -16,6 +16,7 @@ class ClientORM(Base, IsActiveMixin):
     name: Mapped[str] = mapped_column(String, nullable=False)
     surname: Mapped[Optional[str]] = mapped_column(String)
     email: Mapped[str] = mapped_column(String)
+    password: Mapped[str] = mapped_column(String)
 
     def get_schema(self):
         return {
