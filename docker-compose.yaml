@@ -1,0 +1,54 @@
+services:
+  postgres:
+    container_name: postgres
+    image: postgres:13.3
+    environment:
+      POSTGRES_DB: ${DB__NAME}
+      POSTGRES_USER: ${DB__USER}
+      POSTGRES_PASSWORD: ${DB__PASS}
+    ports:
+      - "${DB__PORT}:${DB__DB_PORT}"
+    volumes:
+      - db_data:/var/lib/postgresql/data:cached
+    networks:
+      - backend
+
+  redis:
+    image: redis
+    container_name: redis
+    restart: unless-stopped
+    ports:
+        - '6379:6379'
+    networks:
+      - backend
+
+  backend:
+    container_name: backend
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: >
+      sh -c "uvicorn src.main:app --host ${BACKEND_SERVER__HOST} --port ${BACKEND_SERVER__PORT} --reload
+            && alembic upgrade head"
+    tty: true
+    env_file:
+      - .env
+    ports:
+      - "${BACKEND_SERVER__PORT}:${BACKEND_SERVER__PORT}"
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - ./backend/research_data:/app/backend/research_data
+    networks:
+      - backend
+
+networks:
+  backend:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16
+
+volumes:
+  db_data:

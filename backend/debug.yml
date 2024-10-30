@@ -1,0 +1,32 @@
+services:
+  postgres:
+    container_name: postgres_debug
+    image: postgres:13.3
+    environment:
+      POSTGRES_DB: ${DB__NAME}
+      POSTGRES_USER: ${DB__USER}
+      POSTGRES_PASSWORD: ${DB__PASS}
+    ports:
+      - "${DB__PORT}:${DB__DB_PORT}"
+    volumes:
+      - db_data:/var/lib/postgresql/data:cached
+    networks:
+      - backend_debug
+
+  redis:
+    image: redis
+    container_name: redis_debug
+    restart: unless-stopped
+    ports:
+        - '6379:6379'
+    networks:
+      - backend_debug
+
+
+
+networks:
+  backend_debug:
+
+
+volumes:
+  db_data:
