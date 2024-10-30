@@ -61,9 +61,8 @@ class SQLAlchemyRepository(AbstractRepository):
     async def get_first_with_filters(self, **filter_by):
         stmt = select(self.model).filter_by(**filter_by)
         res = await self.session.execute(stmt)
-        res = res.first()
-
-        return res[0]
+        result = res.scalars().first()
+        return result
 
     async def get_attrs_with_filters(self, *attrs, **filter_by) -> list:
         stmt = select(*attrs).filter_by(**filter_by)

@@ -5,6 +5,8 @@ import io
 from src.app.schemas.client import AuthResponse, ClientData
 from src.app.schemas.enums import GenderEnum
 from src.app.services.client import ClientService
+from src.app.services.like import LikeService
+from src.app.schemas.like import LikeResponse
 
 router = APIRouter(prefix="/clients", tags=["clients"])
 
@@ -69,7 +71,7 @@ async def get_avatar(client_id: int):
     "/login",
     response_model=AuthResponse,
     status_code=status.HTTP_200_OK,
-    description="Аутентификация пользователя",
+    description="Аутентефикация пользователя",
 )
 async def login(
     email: str = Form(..., description="Почта"),
@@ -84,4 +86,40 @@ async def login(
         return JSONResponse(
             status_code=500,
             content={"detail": f"An error occurred during login: {str(e)}"},
+        )
+
+
+@router.post(
+    "/{id}/match",
+    response_model=LikeResponse,
+    status_code=status.HTTP_200_OK,
+    description="Оценивание участником другого участника",
+)
+async def match_participant(id: int, current_user_id: int = Form(...)):
+    try:
+        if await LikeService.check_daily_limit(current_user_id):
+            raise HTTPException(status_code=400, detail="Лимит Лайков.")
+
+        await LikeService.create_like(current_user_id, id)
+        mutual_like = await ClientService.check_mutual_like(current_user_id, id)
+
+        if mutual_like:
+            other_participant = await ClientService.get_client_by_id(id)
+            if other_participant:
+                message = f"Вы понравились {other_participant.name}! Почта участника: {other_participant.email}"
+                return JSONResponse(
+                    content={"detail": message}, status_code=status.HTTP_200_OK
+                )
+
+        return JSONResponse(
+            content={"detail": "Ваш лайк дошёл, взаимной симпатии пока нет."},
+            status_code=status.HTTP_200_OK,
+        )
+
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        return JSONResponse(
+            content={"detail": str(e)},
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )

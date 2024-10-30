@@ -4,6 +4,7 @@ from typing import Type
 from src.database.database import database_accessor
 
 from ..repositories.client import ClientRepository
+from ..repositories.like import LikeRepository
 
 
 from ...database.db_accessor import DatabaseAccessor
@@ -14,6 +15,7 @@ class IUnitOfWork(ABC):
     """Interface for Unit of Work pattern."""
 
     client: Type[ClientRepository]
+    like: Type[LikeRepository]
 
     @abstractmethod
     def __init__(self):
@@ -47,13 +49,17 @@ class UnitOfWork:
         self.session = self.session_fabric()
 
         self.client = ClientRepository(self.session)
+        self.like = LikeRepository(self.session)
 
-    async def __aexit__(self, *args) -> None:
-        await self.rollback()
+    async def __aexit__(self, exc_type, exc, tb):
+        if exc_type is None:
+            await self.commit()
+        else:
+            await self.rollback()
         await self.session.close()
 
-    async def commit(self) -> None:
+    async def commit(self):
         await self.session.commit()
 
-    async def rollback(self) -> None:
+    async def rollback(self):
         await self.session.rollback()
