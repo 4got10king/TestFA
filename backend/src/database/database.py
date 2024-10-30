@@ -13,4 +13,3 @@ database_accessor.new_run()
 async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
     async with database_accessor.get_session() as session:
         yield session
-

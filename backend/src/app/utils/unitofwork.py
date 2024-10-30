@@ -15,7 +15,6 @@ class IUnitOfWork(ABC):
 
     client: Type[ClientRepository]
 
-
     @abstractmethod
     def __init__(self):
         """Initialize the Unit of Work instance."""

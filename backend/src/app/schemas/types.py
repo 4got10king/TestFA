@@ -1,41 +1,10 @@
-from pydantic import BaseModel, StringConstraints
+from pydantic import StringConstraints
 from pydantic import GetCoreSchemaHandler, GetJsonSchemaHandler
 from pydantic.json_schema import JsonSchemaValue
 from pydantic_core import core_schema
 
 from typing import Any
-from typing import Optional
 
-from enum import Enum
-import re
-
-
-# class UUID4(uuid.UUID):
-#     @classmethod
-#     def __get_pydantic_core_schema__(
-#         cls,
-#         _source: type[Any],
-#         handler: GetCoreSchemaHandler,
-#     ) -> core_schema.CoreSchema:
-#         return core_schema.no_info_after_validator_function(
-#             cls._validate, core_schema.str_schema()
-#         )
-
-#     @classmethod
-#     def __get_pydantic_json_schema__(
-#         cls, core_schema: core_schema.CoreSchema, handler: GetJsonSchemaHandler
-#     ) -> JsonSchemaValue:
-#         field_schema = handler(core_schema)
-#         field_schema.update(type="string", format="uuid")
-#         return field_schema
-
-#     @classmethod
-#     def _validate(cls, input_value: uuid.UUID | str) -> uuid.UUID:
-#         if isinstance(input_value, str):
-#             return uuid.UUID(input_value)
-#         elif isinstance(input_value, uuid.UUID):
-#             return input_value
-#         raise
 
 
 class ID(int):
@@ -90,8 +59,6 @@ class Email(StringConstraints):
         return input_value
 
 
-
-
 class Str_20(str):
     @classmethod
     def __get_pydantic_core_schema__(
@@ -142,4 +109,3 @@ class Str_256(str):
         if len(input_value) > 256:
             raise ValueError("String length must not exceed 20 characters")
         return input_value
-

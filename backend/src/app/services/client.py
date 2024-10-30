@@ -1,11 +1,7 @@
-import hashlib
-import time
 
-from starlette import status
 
-from ..schemas.client import ClientFullData, CreateClientRequest
+from ..schemas.client import ClientFullData
 from ..utils.unitofwork import IUnitOfWork, UnitOfWork
-from fastapi import HTTPException, Response
 
 
 class ClientService:
@@ -13,11 +9,11 @@ class ClientService:
     async def create(
         cls, model: ClientFullData, uow: IUnitOfWork = UnitOfWork()
     ) -> ClientFullData:
-        async with uow: 
+        async with uow:
             client = await uow.client.get_by_email(model.email)
             if client:
                 return client.get_schema()
-            
+
             # Сохранение аватарки в BLOB
             data = {
                 "email": model.email,

@@ -1,8 +1,6 @@
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from fastapi_cache import FastAPICache
-from fastapi_cache.backends.redis import RedisBackend
 
 from starlette import status
 
@@ -50,8 +48,7 @@ def get_app() -> FastAPI:
     bind_exceptions(app)
     app.include_router(api_router)
 
-
-    logger = setup_logger("apiLogger", "log.log")
+    setup_logger("apiLogger", "log.log")
     app.state.settings = app_settings
     app.add_middleware(
         CORSMiddleware,

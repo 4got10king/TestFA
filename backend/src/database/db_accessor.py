@@ -29,9 +29,7 @@ class DatabaseAccessor:
         self._statement_cache_size = statement_cache_size
         self._async_session_maker = None
 
-    def set_settings(
-        self, db_settings: DBSettings, statement_cache_size: int = 0
-    ):
+    def set_settings(self, db_settings: DBSettings, statement_cache_size: int = 0):
         self._db_settings = db_settings
         self._dsn = (
             f"postgresql+asyncpg://{self._db_settings.USER}:{self._db_settings.PASS}"

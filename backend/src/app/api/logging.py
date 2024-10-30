@@ -15,9 +15,7 @@ accepted_codes_str = config.get("AcceptedStatusCodes", "codes")
 accepted_status_codes = {int(code) for code in accepted_codes_str.split(",")}
 
 
-def setup_logger(
-    logger_name: str, log_file: str, level: str = "INFO"
-) -> logger: 
+def setup_logger(logger_name: str, log_file: str, level: str = "INFO") -> logger:
     logger.remove()
 
     logger.add(
@@ -26,7 +24,6 @@ def setup_logger(
         level=level,
         format=format_str,
     )
-
 
     return logger
 

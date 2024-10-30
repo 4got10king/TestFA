@@ -84,13 +84,9 @@ class SQLAlchemyRepository(AbstractRepository):
         return res
 
     async def delete(self, **filter_by) -> None:
-        stmt = (
-            delete(self.model)
-            .filter_by(**filter_by)
-            .returning(literal_column("*"))
-        )
+        stmt = delete(self.model).filter_by(**filter_by).returning(literal_column("*"))
         res = await self.session.execute(stmt)
-        return
+        return res
 
     async def soft_delete(self, id: int) -> None:
         stmt = (

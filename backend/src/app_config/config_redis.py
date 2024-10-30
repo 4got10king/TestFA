@@ -32,9 +32,7 @@ class RedisRepository:
             print(e)
             return e
 
-    async def add_one(
-        self, key: str, value: str, ttl: Optional[int] = None
-    ) -> None:
+    async def add_one(self, key: str, value: str, ttl: Optional[int] = None) -> None:
         if ttl:
             await self.redis.set(key, value, ttl)
         else:
@@ -70,9 +68,7 @@ class RedisRepository:
         }
         return values
 
-    async def get_all_obj_by_prefix(
-        self, prefix: str
-    ) -> Dict[str, Optional[Any]]:
+    async def get_all_obj_by_prefix(self, prefix: str) -> Dict[str, Optional[Any]]:
         keys: List[str] = await self.redis.keys(f"{prefix}*")
         values: Dict[str, Optional[Any]] = {}
         for key in keys:
