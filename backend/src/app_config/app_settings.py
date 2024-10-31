@@ -20,8 +20,6 @@ class AppSettings(BaseSettings):
     METHODS: List[str]
     HEADERS: List[str]
     ALGORITHM: str
-    REFRESH_TOKEN_EXPIRE_DAYS: int
-    ACCESS_TOKEN_EXPIRE_MINUTES: int
     origins: List[str] = [
         "http://localhost:3000",
         "http://localhost:3300",

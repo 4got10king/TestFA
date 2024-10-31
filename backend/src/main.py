@@ -7,8 +7,6 @@ from starlette import status
 from .app.api.router import router as api_router
 from src.app_config.app_settings import app_settings
 from src.database.database import database_accessor
-from src.app_config.config_redis import RedisRepository
-from .redisrepo.dependencies import get_redis_repo
 from .app.api.logging import setup_logger
 from .app.api.logging import log_middleware
 
@@ -28,7 +26,7 @@ def bind_events(app: FastAPI) -> None:
         db = database_accessor
         await db.run()
         app.state.db = db
-        get_redis_repo.redis_repo = await RedisRepository.connect()
+        # get_redis_repo.redis_repo = await RedisRepository.connect()
 
     @app.on_event("shutdown")
     async def close_engine():
@@ -68,7 +66,7 @@ Nginx.conf
 
 server {
 listen 443 ssl;
-server_name smileaiapi.ru www.smileaiapi.ru;
+server_name test.ru www.test.ru;
 
 location / {
 proxy_pass http://localhost:8081;
@@ -82,8 +80,8 @@ proxy_set_header X-Forwarded-Proto $scheme;
 }
 # ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
 
-ssl_certificate /etc/ssl/smileaiapi.ru.crt; # managed by Certbot
-ssl_certificate_key /etc/ssl/smileaiapi.ru.key; # managed by Certbot
+ssl_certificate /etc/ssl/test.ru.crt; # managed by Certbot
+ssl_certificate_key /etc/ssl/test.ru.key; # managed by Certbot
 # include /etc/ssl/;
 #ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
 
