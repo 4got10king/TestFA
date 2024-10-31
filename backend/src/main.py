@@ -38,7 +38,7 @@ def bind_events(app: FastAPI) -> None:
 
 def get_app() -> FastAPI:
     app = FastAPI(
-        title="smile_ai",
+        title="Test api",
         version="0.1.0",
         description="Test api",
         docs_url="/swagger",

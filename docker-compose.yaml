@@ -26,6 +26,16 @@ services:
       - "${BACKEND_SERVER__PORT}:${BACKEND_SERVER__PORT}"
     depends_on:
       - postgres
+      - redis
+    networks:
+      - backend
+
+  redis:
+    image: redis:alpine
+    container_name: redis
+    restart: unless-stopped
+    ports:
+        - '${REDIS_PORT}:${REDIS_PORT}'
     networks:
       - backend
 
