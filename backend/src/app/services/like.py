@@ -11,7 +11,7 @@ class LikeService:
         async with uow:
             limit_time = datetime.utcnow() - timedelta(days=1)
             count = await uow.like.get_count_by_param(
-                user_id=user_id, created_at=limit_time
+                user_id=user_id, creation_date=limit_time
             )
             return count >= 5
 
@@ -30,7 +30,7 @@ class LikeService:
                 like_data = {
                     "user_id": user_id,
                     "liked_user_id": liked_user_id,
-                    "created_at": datetime.utcnow(),
+                    "creation_date": datetime.utcnow(),
                 }
                 new_like = await uow.like.add_one(data=like_data)
                 await uow.commit()
@@ -38,7 +38,7 @@ class LikeService:
                 return {
                     "user_id": new_like.user_id,
                     "liked_user_id": new_like.liked_user_id,
-                    "created_at": new_like.created_at,
+                    "creation_date": new_like.creation_date,
                 }
             except Exception:
                 raise HTTPException(

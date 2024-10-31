@@ -3,6 +3,9 @@ from ..schemas.client import AuthResponse, ClientData, ClientFullData
 from ..utils.unitofwork import IUnitOfWork, UnitOfWork
 from ..utils.image_processor import ImageProcessor
 import bcrypt
+from sqlalchemy import select
+from ..models.client import ClientORM
+from ..schemas.client import GenderEnum
 
 
 class ClientService:
@@ -96,5 +99,47 @@ class ClientService:
                 return user_like is not None and other_user_like is not None
             except Exception:
                 raise HTTPException(
-                    status_code=500, detail="Ошибка при проверке взаимного лайка."
+                    status_code=500, detail="Ошибка при проверке взаимного Лайка."
                 )
+
+    @classmethod
+    async def get_all_clients(
+        cls,
+        name: str = None,
+        surname: str = None,
+        gender: GenderEnum = None,
+        sort_by: str = "creation_date",
+        sort_order: str = "asc",
+        uow: IUnitOfWork = UnitOfWork(),
+    ) -> list[ClientData]:
+        async with uow:
+            query = select(ClientORM)
+
+            if name:
+                query = query.where(ClientORM.name.ilike(f"%{name}%"))
+            if surname:
+                query = query.where(ClientORM.surname.ilike(f"%{surname}%"))
+            if gender:
+                query = query.where(ClientORM.gender == gender)
+
+            if sort_by == "creation_date":
+                query = query.order_by(
+                    ClientORM.creation_date.asc()
+                    if sort_order == "asc"
+                    else ClientORM.creation_date.desc()
+                )
+            elif sort_by == "name":
+                query = query.order_by(
+                    ClientORM.name.asc()
+                    if sort_order == "asc"
+                    else ClientORM.name.desc()
+                )
+            elif sort_by == "surname":
+                query = query.order_by(
+                    ClientORM.surname.asc()
+                    if sort_order == "asc"
+                    else ClientORM.surname.desc()
+                )
+
+            result = await uow.session.execute(query)
+            return result.scalars().all()

@@ -1,13 +1,13 @@
 from sqlalchemy import Integer, LargeBinary, String
 from src.app.schemas.enums import GenderEnum
-from src.app.models.mixin import IsActiveMixin
+from src.app.models.mixin import CreationDateMixin, IsActiveMixin
 from src.database.database_metadata import Base
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy import Enum as SQLAlchemyEnum
 from typing import Optional
 
 
-class ClientORM(Base, IsActiveMixin):
+class ClientORM(Base, IsActiveMixin, CreationDateMixin):
     __tablename__ = "clients"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
@@ -26,4 +26,5 @@ class ClientORM(Base, IsActiveMixin):
             "email": self.email,
             "gender": self.gender,
             "avatar": self.avatar,
+            "creation_date": self.creation_date,
         }

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, File, UploadFile, Form, status, HTTPException
+from fastapi import APIRouter, File, UploadFile, Form, status, HTTPException, Query
 from starlette.responses import JSONResponse, StreamingResponse
 import io
 
@@ -118,6 +118,38 @@ async def match_participant(id: int, current_user_id: int = Form(...)):
 
     except HTTPException as e:
         raise e
+    except Exception as e:
+        return JSONResponse(
+            content={"detail": str(e)},
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+
+
+@router.get(
+    "/list",
+    response_model=list[ClientData],
+    status_code=status.HTTP_200_OK,
+    description="Получить список участников с возможностью фильтрации и сортировки",
+)
+async def list_clients(
+    name: str = Query(None, description="Имя для фильтрации"),
+    surname: str = Query(None, description="Фамилия для фильтрации"),
+    gender: GenderEnum = Query(None, description="Пол для фильтрации"),
+    sort_by: str = Query(
+        "registration_date",
+        description="Сортировка по полю (registration_date, name, surname)",
+    ),
+    sort_order: str = Query("asc", description="Порядок сортировки (asc, desc)"),
+):
+    try:
+        clients = await ClientService.get_all_clients(
+            name=name,
+            surname=surname,
+            gender=gender,
+            sort_by=sort_by,
+            sort_order=sort_order,
+        )
+        return clients
     except Exception as e:
         return JSONResponse(
             content={"detail": str(e)},

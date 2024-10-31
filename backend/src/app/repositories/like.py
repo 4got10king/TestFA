@@ -16,9 +16,9 @@ class LikeRepository(SQLAlchemyRepository):
     async def get_likes_by_user_id(self, user_id: int):
         return await self.get_all_with_filters(user_id=user_id)
 
-    async def get_count_by_param(self, user_id: int, created_at: datetime) -> int:
+    async def get_count_by_param(self, user_id: int, creation_date: datetime) -> int:
         query = select(func.count()).where(
-            LikeORM.user_id == user_id, LikeORM.created_at >= created_at
+            LikeORM.user_id == user_id, LikeORM.creation_date >= creation_date
         )
         result = await self.session.execute(query)
         return result.scalar()
