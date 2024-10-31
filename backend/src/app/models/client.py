@@ -1,4 +1,4 @@
-from sqlalchemy import Integer, LargeBinary, String
+from sqlalchemy import Integer, LargeBinary, String, Float
 from src.app.schemas.enums import GenderEnum
 from src.app.models.mixin import CreationDateMixin, IsActiveMixin
 from src.database.database_metadata import Base
@@ -17,6 +17,8 @@ class ClientORM(Base, IsActiveMixin, CreationDateMixin):
     surname: Mapped[Optional[str]] = mapped_column(String)
     email: Mapped[str] = mapped_column(String)
     password: Mapped[str] = mapped_column(String)
+    latitude: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    longitude: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
 
     def get_schema(self):
         return {

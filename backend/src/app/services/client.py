@@ -6,6 +6,10 @@ import bcrypt
 from sqlalchemy import select
 from ..models.client import ClientORM
 from ..schemas.client import GenderEnum
+from geopy.distance import great_circle
+from cachetools import TTLCache, cached
+
+cache = TTLCache(maxsize=100, ttl=600)
 
 
 class ClientService:
@@ -18,7 +22,7 @@ class ClientService:
             if existing_client:
                 raise HTTPException(
                     status_code=400,
-                    detail=f"Email '{model.email}' уже знанят",
+                    detail=f"Email '{model.email}' уже занят",
                 )
 
             hashed_password = bcrypt.hashpw(
@@ -36,6 +40,8 @@ class ClientService:
                 "surname": model.surname,
                 "gender": model.gender,
                 "password": hashed_password,
+                "latitude": model.latitude,
+                "longitude": model.longitude,
             }
 
             new_client = await uow.client.add_one(data=data)
@@ -103,6 +109,7 @@ class ClientService:
                 )
 
     @classmethod
+    @cached(cache)
     async def get_all_clients(
         cls,
         name: str = None,
@@ -110,6 +117,8 @@ class ClientService:
         gender: GenderEnum = None,
         sort_by: str = "creation_date",
         sort_order: str = "asc",
+        user_location: tuple = None,
+        distance: float = None,
         uow: IUnitOfWork = UnitOfWork(),
     ) -> list[ClientData]:
         async with uow:
@@ -122,24 +131,29 @@ class ClientService:
             if gender:
                 query = query.where(ClientORM.gender == gender)
 
-            if sort_by == "creation_date":
-                query = query.order_by(
-                    ClientORM.creation_date.asc()
-                    if sort_order == "asc"
-                    else ClientORM.creation_date.desc()
-                )
-            elif sort_by == "name":
-                query = query.order_by(
-                    ClientORM.name.asc()
-                    if sort_order == "asc"
-                    else ClientORM.name.desc()
-                )
-            elif sort_by == "surname":
-                query = query.order_by(
-                    ClientORM.surname.asc()
-                    if sort_order == "asc"
-                    else ClientORM.surname.desc()
-                )
-
             result = await uow.session.execute(query)
-            return result.scalars().all()
+            clients = result.scalars().all()
+
+            if user_location and distance is not None:
+                filtered_clients = [
+                    client
+                    for client in clients
+                    if great_circle(
+                        user_location, (client.latitude, client.longitude)
+                    ).km
+                    <= distance
+                ]
+                return filtered_clients
+
+            return [
+                {
+                    "id": client.id,
+                    "name": client.name,
+                    "surname": client.surname,
+                    "email": client.email,
+                    "gender": client.gender,
+                    "latitude": client.latitude,
+                    "longitude": client.longitude,
+                }
+                for client in clients
+            ]

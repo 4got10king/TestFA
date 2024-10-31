@@ -34,3 +34,16 @@ class AuthResponse(BaseModel):
     surname: str
     email: str
     gender: str
+
+
+class ClientResponse(BaseModel):
+    id: int
+    name: str
+    surname: str
+    email: str
+    gender: GenderEnum
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+
+    class Config:
+        orm_mode = True

@@ -2,7 +2,7 @@ from fastapi import APIRouter, File, UploadFile, Form, status, HTTPException, Qu
 from starlette.responses import JSONResponse, StreamingResponse
 import io
 
-from src.app.schemas.client import AuthResponse, ClientData
+from src.app.schemas.client import AuthResponse, ClientData, ClientResponse
 from src.app.schemas.enums import GenderEnum
 from src.app.services.client import ClientService
 from src.app.services.like import LikeService
@@ -24,6 +24,8 @@ async def register(
     gender: GenderEnum = Form(..., description="Пол"),
     avatar: UploadFile = File(None),
     password: str = Form(..., description="Пароль"),
+    latitude: float = Form(..., description="Широта"),
+    longitude: float = Form(..., description="Долгота"),
 ):
     avatar_content = await avatar.read() if avatar else None
 
@@ -34,6 +36,8 @@ async def register(
         gender=gender,
         avatar=avatar_content,
         password=password,
+        latitude=latitude,
+        longitude=longitude,
     )
 
     try:
@@ -44,6 +48,8 @@ async def register(
             "surname": created_user["surname"],
             "email": created_user["email"],
             "gender": created_user["gender"],
+            "latitude": created_user["latitude"],
+            "longitude": created_user["longitude"],
         }
         return JSONResponse(content=response_data, status_code=status.HTTP_201_CREATED)
     except HTTPException as e:
@@ -127,7 +133,7 @@ async def match_participant(id: int, current_user_id: int = Form(...)):
 
 @router.get(
     "/list",
-    response_model=list[ClientData],
+    response_model=list[ClientResponse],
     status_code=status.HTTP_200_OK,
     description="Получить список участников с возможностью фильтрации и сортировки",
 )
@@ -136,11 +142,14 @@ async def list_clients(
     surname: str = Query(None, description="Фамилия для фильтрации"),
     gender: GenderEnum = Query(None, description="Пол для фильтрации"),
     sort_by: str = Query(
-        "registration_date",
-        description="Сортировка по полю (registration_date, name, surname)",
+        "creation_date", description="Сортировка по полю (creation_date, name, surname)"
     ),
     sort_order: str = Query("asc", description="Порядок сортировки (asc, desc)"),
+    latitude: float = Query(None, description="Широта для фильтрации"),
+    longitude: float = Query(None, description="Долгота для фильтрации"),
+    distance: float = Query(None, description="Максимальное расстояние в километрах"),
 ):
+    user_location = (latitude, longitude) if latitude and longitude else None
     try:
         clients = await ClientService.get_all_clients(
             name=name,
@@ -148,6 +157,8 @@ async def list_clients(
             gender=gender,
             sort_by=sort_by,
             sort_order=sort_order,
+            user_location=user_location,
+            distance=distance,
         )
         return clients
     except Exception as e:

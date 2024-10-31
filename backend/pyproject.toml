@@ -27,6 +27,8 @@ fastapi-cache2 = {extras = ["redis"], version = "^0.2.1"}
 python-multipart = "^0.0.16"
 loguru = "^0.7.2"
 pillow = "^11.0.0"
+cachetools = "^5.5.0"
+geopy = "^2.4.1"
 
 
 
