@@ -18,7 +18,7 @@ services:
     container_name: redis_debug
     restart: unless-stopped
     ports:
-        - '6379:6379'
+        - '${REDIS_PORT}:${REDIS_PORT}'
     networks:
       - backend_debug
 

@@ -7,7 +7,7 @@ class DBSettings(BaseSettings):
     model_config = SettingsConfigDict(
         case_sensitive=False,
         env_prefix="DB__",
-        env_file=".env",
+        env_file="../.env",
         extra="ignore",
     )
     HOST: str

@@ -4,6 +4,9 @@ from fastapi.responses import JSONResponse
 
 from starlette import status
 
+from src.app_config.config_redis import RedisRepository
+from src.redisrepo.dependencies import get_redis_repo
+
 from .app.api.router import router as api_router
 from src.app_config.app_settings import app_settings
 from src.database.database import database_accessor
@@ -26,7 +29,7 @@ def bind_events(app: FastAPI) -> None:
         db = database_accessor
         await db.run()
         app.state.db = db
-        # get_redis_repo.redis_repo = await RedisRepository.connect()
+        get_redis_repo.redis_repo = await RedisRepository.connect()
 
     @app.on_event("shutdown")
     async def close_engine():

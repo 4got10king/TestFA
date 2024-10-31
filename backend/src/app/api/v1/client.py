@@ -7,6 +7,8 @@ from src.app.schemas.enums import GenderEnum
 from src.app.services.client import ClientService
 from src.app.services.like import LikeService
 from src.app.schemas.like import LikeResponse
+from src.app.utils.geocoding import geocoding_service
+from src.app.utils.calc_dist import distance_calculator
 
 router = APIRouter(prefix="/clients", tags=["clients"])
 
@@ -24,10 +26,17 @@ async def register(
     gender: GenderEnum = Form(..., description="Пол"),
     avatar: UploadFile = File(None),
     password: str = Form(..., description="Пароль"),
-    latitude: float = Form(..., description="Широта"),
-    longitude: float = Form(..., description="Долгота"),
+    city: str = Form(..., description="Город"),
 ):
     avatar_content = await avatar.read() if avatar else None
+
+    try:
+        latitude, longitude = await geocoding_service.get_coordinates(city)
+    except ValueError as e:
+        return JSONResponse(
+            status_code=400,
+            content={"detail": str(e)},
+        )
 
     user = ClientData(
         name=name,
@@ -145,21 +154,44 @@ async def list_clients(
         "creation_date", description="Сортировка по полю (creation_date, name, surname)"
     ),
     sort_order: str = Query("asc", description="Порядок сортировки (asc, desc)"),
-    latitude: float = Query(None, description="Широта для фильтрации"),
-    longitude: float = Query(None, description="Долгота для фильтрации"),
+    city: str = Query(None, description="Город для фильтрации"),
     distance: float = Query(None, description="Максимальное расстояние в километрах"),
 ):
-    user_location = (latitude, longitude) if latitude and longitude else None
+    user_location = None
     try:
+        if city and distance is not None:
+            latitude, longitude = await geocoding_service.get_coordinates(city)
+            user_location = (latitude, longitude)
+
+        # Получаем список клиентов
         clients = await ClientService.get_all_clients(
             name=name,
             surname=surname,
             gender=gender,
             sort_by=sort_by,
             sort_order=sort_order,
-            user_location=user_location,
-            distance=distance,
         )
+
+        if user_location:
+            filtered_clients = []
+            # Создаем список координат для вычисления расстояний
+            locations = [
+                (
+                    user_location[0],
+                    user_location[1],
+                    client["latitude"],
+                    client["longitude"],
+                )
+                for client in clients
+            ]
+            distances = await distance_calculator.calculate_distances(locations)
+
+            for client, client_distance in zip(clients, distances):
+                if client_distance <= distance:
+                    filtered_clients.append(client)
+
+            return filtered_clients
+
         return clients
     except Exception as e:
         return JSONResponse(

@@ -50,9 +50,9 @@ app-logs:
 	${LOGS} ${APP_CONTAINER} -f
 
 debug:
-	sed -i '' 's/DB__HOST=postgres/DB__HOST=localhost/' .env
-	sed -i '' 's/REDIS_ENDPOINT=redis:\/\/redis:6379/REDIS_ENDPOINT=redis:\/\/localhost:6379/' .env
-	docker-compose -f debug.yml up -d
+	sed -i '' 's/DB__HOST=postgres/DB__HOST=localhost/' ../.env
+	sed -i '' 's/REDIS_ENDPOINT=redis:\/\/redis:6379/REDIS_ENDPOINT=redis:\/\/localhost:6379/' ../.env
+	docker-compose -f debug.yml up -d --build
 
 run_migr:
 	@echo "Applying database migrations..."

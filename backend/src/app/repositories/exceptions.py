@@ -1,5 +1,14 @@
 from typing import Any
 from fastapi import HTTPException, status
+from starlette.responses import JSONResponse
+
+
+class ExceptionHandler:
+    @staticmethod
+    async def handle_exception(e: Exception):
+        if isinstance(e, HTTPException):
+            return JSONResponse(status_code=e.status_code, content={"detail": e.detail})
+        return JSONResponse(status_code=500, content={"detail": str(e)})
 
 
 class DataBase404Exception(HTTPException):
