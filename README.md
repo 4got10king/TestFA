@@ -1,7 +1,6 @@
 # TestFA
 
 Паттерн UOW 
-
 https://github1s.com/cosmicpython/code/tree/chapter_06_uow
 
 ## Описание проекта
